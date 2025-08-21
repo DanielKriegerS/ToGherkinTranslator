@@ -34,10 +34,17 @@ public class Main {
             Workbook workbook = new XSSFWorkbook(fis);
             Sheet sheet = workbook.getSheetAt(0);
 
-            int nomeTesteCol = 0;
-            int preRequisitoCol = 1;
-            int descricaoCol = 3;
+            int nomeHistoriaCol = 0;
+            int nomeTesteCol = 1;
+            int preRequisitoCol = 2;
+            int descricaoCol = 4;
             int tipoCol = 5;
+
+            String nomeHistoria = getMergedCellValue(sheet, sheet.getRow(0), nomeHistoriaCol);
+
+            if (nomeHistoria == null || nomeHistoria.isEmpty()) {
+                throw new IllegalStateException("Nome da história não está presente na planilha.");
+            }
 
             for (int i = 1; i <= sheet.getLastRowNum(); i++) {
                 Row row = sheet.getRow(i);
@@ -60,11 +67,15 @@ public class Main {
 
             Files.createDirectories(Path.of(pastaSaida));
 
+            String nomeArquivo = nomeHistoria.replaceAll("[^a-zA-Z0-9\\-_]", "").replace(" ", "")+".txt";
+            Path caminhoSaida = Path.of(pastaSaida, nomeArquivo);
+
+            StringBuilder gherkin = new StringBuilder();
+
             for (Map.Entry<String, List<GherkinStep>> entry : testesAgrupados.entrySet()) {
                 String nomeTeste = entry.getKey();
                 List<GherkinStep> passos = entry.getValue();
 
-                StringBuilder gherkin = new StringBuilder();
                 gherkin.append("Feature: ").append(nomeTeste).append("\n\n");
 
                 Optional<String> primeiroPreReq = passos.stream()
@@ -78,9 +89,6 @@ public class Main {
                     String tipoFormatado = formatTipo(step.tipo);
                     gherkin.append(tipoFormatado).append(" ").append(step.descricao).append("\n");
                 }
-
-                String nomeArquivo = nomeTeste.replaceAll("[^a-zA-Z0-9\\-_ ]", "").replace(" ", "") + ".txt";
-                Path caminhoSaida = Path.of(pastaSaida, nomeArquivo);
 
                 try (BufferedWriter writer = Files.newBufferedWriter(caminhoSaida)) {
                     writer.write(gherkin.toString());
