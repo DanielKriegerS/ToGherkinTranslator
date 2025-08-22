@@ -4,31 +4,37 @@ import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
-import javax.swing.*;
+import java.awt.*;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.List;
 
 public class Main {
     public static void main(String[] args) {
-        JFileChooser fileChooser = new JFileChooser();
-        fileChooser.setDialogTitle("Selecionar planilha de testes:");
-        int resultado = fileChooser.showOpenDialog(null);
+        Frame frame = new Frame();
+        FileDialog dialog = new FileDialog(frame, "Selecionar planilha de testes", FileDialog.LOAD);
+        dialog.setFile("*.xlsx");
+        dialog.setVisible(true);
+        frame.dispose();
 
-        if (resultado != JFileChooser.APPROVE_OPTION) {
-            System.out.println("Nenhum arquivo selecionado!");
+        String directory = dialog.getDirectory();
+        String filename = dialog.getFile();
+
+        if (filename == null) {
+            System.out.println("Nenhum arquivo selecionado.");
             return;
         }
 
-        File arquivoSelecionado = fileChooser.getSelectedFile();
+        File arquivoSelecionado = new File(directory, filename);
         String caminhoArquivo = arquivoSelecionado.getAbsolutePath();
         String pastaSaida = "saida_gherkin";
 
         try {
-            Map<String, List<GherkinStep>> testesAgrupados = new HashMap<>();
+            Map<String, List<GherkinStep>> testesAgrupados = new LinkedHashMap<>();
 
             FileInputStream fis = new FileInputStream(caminhoArquivo);
             Workbook workbook = new XSSFWorkbook(fis);
@@ -89,6 +95,7 @@ public class Main {
                     String tipoFormatado = formatTipo(step.tipo);
                     gherkin.append(tipoFormatado).append(" ").append(step.descricao).append("\n");
                 }
+                gherkin.append("\n");
 
                 try (BufferedWriter writer = Files.newBufferedWriter(caminhoSaida)) {
                     writer.write(gherkin.toString());
