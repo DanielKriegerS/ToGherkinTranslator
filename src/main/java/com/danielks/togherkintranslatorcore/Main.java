@@ -40,7 +40,7 @@ public class Main {
             int descricaoCol = 4;
             int tipoCol = 5;
 
-            String nomeHistoria = getMergedCellValue(sheet, sheet.getRow(0), nomeHistoriaCol);
+            String nomeHistoria = getMergedCellValue(sheet, sheet.getRow(1), nomeHistoriaCol);
 
             if (nomeHistoria == null || nomeHistoria.isEmpty()) {
                 throw new IllegalStateException("Nome da história não está presente na planilha.");
@@ -93,9 +93,9 @@ public class Main {
                 try (BufferedWriter writer = Files.newBufferedWriter(caminhoSaida)) {
                     writer.write(gherkin.toString());
                 }
-
-                System.out.println("Arquivo gerado: " + caminhoSaida);
             }
+
+            System.out.println("Arquivo gerado: " + caminhoSaida);
 
         } catch (Exception e) {
             e.printStackTrace();
